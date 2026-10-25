@@ -37,6 +37,7 @@ dependencies:
   flutter_map: ^8.3.2
   latlong2: ^0.10.1
   geolocator: ^14.1.2
+  maplibre_gl: 0.27.1
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +64,8 @@ flutter:
   assets:
     -  assets/data/waypoints_flutter.json
     - assets/data/recorded_route.geojson
+    - assets/data/animal_photo_credits.json
+    - assets/images/animals/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

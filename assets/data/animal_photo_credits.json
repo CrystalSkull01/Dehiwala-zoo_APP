@@ -1,0 +1,641 @@
+﻿[
+    {
+        "id":  "WP002",
+        "category":  "Birds",
+        "species":  "Ostrich",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Struthio_camelus_%28captive%29_in_Jardim_Zool%C3%B3gico_de_Curitiba.jpg/960px-Struthio_camelus_%28captive%29_in_Jardim_Zool%C3%B3gico_de_Curitiba.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Struthio camelus (captive) in Jardim Zoológico de Curitiba.jpg",
+                      "author":  "Wilfredor",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Struthio_camelus_(captive)_in_Jardim_Zool%C3%B3gico_de_Curitiba.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP003",
+        "category":  "Birds",
+        "species":  "Crowned Crane",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Grey_crowned_crane_%28Balearica_regulorum%29%2C_Ngorongoro_Conservation_Area.jpg/960px-Grey_crowned_crane_%28Balearica_regulorum%29%2C_Ngorongoro_Conservation_Area.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Grey crowned crane (Balearica regulorum), Ngorongoro Conservation Area.jpg",
+                      "author":  "Hobbyfotowiki",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Grey_crowned_crane_(Balearica_regulorum),_Ngorongoro_Conservation_Area.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP006",
+        "category":  "Birds",
+        "species":  "Cassowary",
+        "photo":  {
+                      "url":  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Close-up_shot_of_a_Cassowary.jpg/960px-Close-up_shot_of_a_Cassowary.jpg",
+                      "title":  "Close-up shot of a Cassowary.jpg",
+                      "author":  "WhiteducksIG",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Close-up_shot_of_a_Cassowary.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP007",
+        "category":  "Birds",
+        "species":  "Black Swan",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Black_Swan_at_Martin_Mere.JPG/960px-Black_Swan_at_Martin_Mere.JPG?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Black Swan at Martin Mere.JPG",
+                      "author":  "Francis C. Franklin",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Black_Swan_at_Martin_Mere.JPG",
+                      "license":  "CC BY-SA 3.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/3.0"
+                  }
+    },
+    {
+        "id":  "WP008",
+        "category":  "Mammals",
+        "species":  "Oryx",
+        "photo":  {
+                      "url":  "https://upload.wikimedia.org/wikipedia/commons/e/e8/Oryx_gazella_1.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail_unscaled",
+                      "title":  "File:Oryx gazella 1.jpg",
+                      "author":  "Freddy Weber",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Oryx_gazella_1.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP009",
+        "category":  "Birds",
+        "species":  "Blue-and-yellow Macaw",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Ara_ararauna_portrait_Rhodes.jpg/960px-Ara_ararauna_portrait_Rhodes.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Ara ararauna portrait Rhodes.jpg",
+                      "author":  "Jebulon",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Ara_ararauna_portrait_Rhodes.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP012",
+        "category":  "Mammals",
+        "species":  "Camel",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Camel_in_Gobi_Desert_01.jpg/960px-Camel_in_Gobi_Desert_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Camel in Gobi Desert 01.jpg",
+                      "author":  "Bernard Gagnon",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Camel_in_Gobi_Desert_01.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP016",
+        "category":  "Mammals",
+        "species":  "Brown Bear",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Brown_bear_%28Ursus_arctos_arctos%29_running.jpg/960px-Brown_bear_%28Ursus_arctos_arctos%29_running.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Brown bear (Ursus arctos arctos) running.jpg",
+                      "author":  "Malene Thyssen",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Brown_bear_(Ursus_arctos_arctos)_running.jpg",
+                      "license":  "CC BY 2.5",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by/2.5"
+                  }
+    },
+    {
+        "id":  "WP019",
+        "category":  "Mammals",
+        "species":  "Fox",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Red_fox_detailed_photo.jpg/960px-Red_fox_detailed_photo.jpg",
+                      "title":  "Red fox detailed photo.jpg",
+                      "author":  "Sarvis John, U.S. Fish and Wildlife Service",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Red_fox_detailed_photo.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0"
+                  }
+    },
+    {
+        "id":  "WP021",
+        "category":  "Mammals",
+        "species":  "Bengal Tiger",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Bengal_tiger_%28Panthera_tigris_tigris%29_female_3.jpg/960px-Bengal_tiger_%28Panthera_tigris_tigris%29_female_3.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Bengal tiger (Panthera tigris tigris) female 3.jpg",
+                      "author":  "Charles J. Sharp",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Bengal_tiger_(Panthera_tigris_tigris)_female_3.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0",
+                      "assetPath":  "assets/images/animals/bengal_tiger.jpg"
+                  }
+    },
+    {
+        "id":  "WP022",
+        "category":  "Mammals",
+        "species":  "Eurasian Otter",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/%D0%92%D1%8B%D0%B4%D1%80%D0%B0_%28Lutra_lutra%29.jpg/960px-%D0%92%D1%8B%D0%B4%D1%80%D0%B0_%28Lutra_lutra%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Выдра (Lutra lutra).jpg",
+                      "author":  "Гурьева Светлана (zooclub.ru)",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:%D0%92%D1%8B%D0%B4%D1%80%D0%B0_(Lutra_lutra).jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP023",
+        "category":  "Mammals",
+        "species":  "Meerkat",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Meerkat_%28Suricata_suricatta%29.jpg/960px-Meerkat_%28Suricata_suricatta%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Meerkat (Suricata suricatta).jpg",
+                      "author":  "Hans Hillewaert",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Meerkat_(Suricata_suricatta).jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP024",
+        "category":  "Mammals",
+        "species":  "Jungle Cat",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Jungle_cat_by_Tisha_Mukherjee_05.jpg/960px-Jungle_cat_by_Tisha_Mukherjee_05.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Jungle cat by Tisha Mukherjee 05.jpg",
+                      "author":  "Tisha Mukherjee",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Jungle_cat_by_Tisha_Mukherjee_05.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP025",
+        "category":  "Mammals",
+        "species":  "Ring-tailed Lemur",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Ring-tailed_lemur_%28Lemur_catta%29.jpg/960px-Ring-tailed_lemur_%28Lemur_catta%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Ring-tailed lemur (Lemur catta).jpg",
+                      "author":  "Charles J. Sharp",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Ring-tailed_lemur_(Lemur_catta).jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP026",
+        "category":  "Mammals",
+        "species":  "Purple-faced Langur",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Semnopithecus_vetulus_447938158.jpg/960px-Semnopithecus_vetulus_447938158.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Semnopithecus vetulus 447938158.jpg",
+                      "author":  "Stuart",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Semnopithecus_vetulus_447938158.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP027",
+        "category":  "Mammals",
+        "species":  "Grey Langur",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Southern_plains_grey_langur_%28Semnopithecus_dussumieri%29_female_head.jpg/960px-Southern_plains_grey_langur_%28Semnopithecus_dussumieri%29_female_head.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Southern plains grey langur (Semnopithecus dussumieri) female head.jpg",
+                      "author":  "Charles J. Sharp",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Southern_plains_grey_langur_(Semnopithecus_dussumieri)_female_head.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP028",
+        "category":  "Mammals",
+        "species":  "White Toque Monkey",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Female_Toque_macaque_with_baby_-_%28Harmony_of_Life%29.jpg/960px-Female_Toque_macaque_with_baby_-_%28Harmony_of_Life%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Female Toque macaque with baby - (Harmony of Life).jpg",
+                      "author":  "Senthi Aathavan Senthilverl",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Female_Toque_macaque_with_baby_-_(Harmony_of_Life).jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP029",
+        "category":  "Mammals",
+        "species":  "Hippopotamus",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Hippopotamus_%40_Barcelona_zoo.jpg/960px-Hippopotamus_%40_Barcelona_zoo.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Hippopotamus @ Barcelona zoo.jpg",
+                      "author":  "Pedroserafin",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Hippopotamus_@_Barcelona_zoo.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP030",
+        "category":  "Mammals",
+        "species":  "Capybara",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/34/Hydrochoeris_hydrochaeris_in_Brazil_in_Petr%C3%B3polis%2C_Rio_de_Janeiro%2C_Brazil_09.jpg/960px-Hydrochoeris_hydrochaeris_in_Brazil_in_Petr%C3%B3polis%2C_Rio_de_Janeiro%2C_Brazil_09.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Hydrochoeris hydrochaeris in Brazil in Petrópolis, Rio de Janeiro, Brazil 09.jpg",
+                      "author":  "Wilfredor",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Hydrochoeris_hydrochaeris_in_Brazil_in_Petr%C3%B3polis,_Rio_de_Janeiro,_Brazil_09.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP031",
+        "category":  "Mammals",
+        "species":  "Hippopotamus",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Hippopotamus_%40_Barcelona_zoo.jpg/960px-Hippopotamus_%40_Barcelona_zoo.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Hippopotamus @ Barcelona zoo.jpg",
+                      "author":  "Pedroserafin",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Hippopotamus_@_Barcelona_zoo.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP032",
+        "category":  "Mammals",
+        "species":  "Elephant",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Asian_elephants.jpg/1280px-Asian_elephants.jpg",
+                      "title":  "Asian elephants.jpg",
+                      "author":  "Sachin",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Asian_elephants.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP033",
+        "category":  "Mammals",
+        "species":  "Deer",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/Cervus_elaphus_Luc_Viatour_2.jpg/960px-Cervus_elaphus_Luc_Viatour_2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Cervus elaphus Luc Viatour 2.jpg",
+                      "author":  "Lviatour",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Cervus_elaphus_Luc_Viatour_2.jpg",
+                      "license":  "CC BY-SA 3.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/3.0"
+                  }
+    },
+    {
+        "id":  "WP034",
+        "category":  "Mammals",
+        "species":  "Nilgai",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Nilgai_at_Jambu_Zoo.jpg/960px-Nilgai_at_Jambu_Zoo.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Nilgai at Jambu Zoo.jpg",
+                      "author":  "Sumbria.vikramaditya",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Nilgai_at_Jambu_Zoo.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP035",
+        "category":  "Mammals",
+        "species":  "Hamadryas Baboon",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Papio_hamadryas_%28aka%29.jpg/960px-Papio_hamadryas_%28aka%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Papio hamadryas (aka).jpg",
+                      "author":  "André Karwath aka Aka",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Papio_hamadryas_(aka).jpg",
+                      "license":  "CC BY-SA 2.5",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/2.5"
+                  }
+    },
+    {
+        "id":  "WP036",
+        "category":  "Mammals",
+        "species":  "Lion",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Lion_%28Panthera_leo%29_male_6y.jpg/960px-Lion_%28Panthera_leo%29_male_6y.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Lion (Panthera leo) male 6y.jpg",
+                      "author":  "Charles J. Sharp",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Lion_(Panthera_leo)_male_6y.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP037",
+        "category":  "Mammals",
+        "species":  "Chimpanzee",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/A_chimpanzee_%28Pan_troglodytes%29.jpg/960px-A_chimpanzee_%28Pan_troglodytes%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:A chimpanzee (Pan troglodytes).jpg",
+                      "author":  "Vasil Vyagov",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:A_chimpanzee_(Pan_troglodytes).jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP038",
+        "category":  "Mammals",
+        "species":  "Mule",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Juancito.jpg/960px-Juancito.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Juancito.jpg",
+                      "author":  "w:User:Dario u / User:Dario urruty",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Juancito.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP039",
+        "category":  "Birds",
+        "species":  "Brahminy Kite",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/Brahminy_Kite_in_Sundarbans_National_Park_July_2025_by_Tisha_Mukherjee_06.jpg/960px-Brahminy_Kite_in_Sundarbans_National_Park_July_2025_by_Tisha_Mukherjee_06.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Brahminy Kite in Sundarbans National Park July 2025 by Tisha Mukherjee 06.jpg",
+                      "author":  "Tisha Mukherjee",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Brahminy_Kite_in_Sundarbans_National_Park_July_2025_by_Tisha_Mukherjee_06.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP040",
+        "category":  "Birds",
+        "species":  "White-bellied Sea Eagle",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0e/White-bellied_Sea-Eagle_in_Sundarbans_National_Park_October_2025_by_Tisha_Mukherjee_03.jpg/960px-White-bellied_Sea-Eagle_in_Sundarbans_National_Park_October_2025_by_Tisha_Mukherjee_03.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:White-bellied Sea-Eagle in Sundarbans National Park October 2025 by Tisha Mukherjee 03.jpg",
+                      "author":  "Tisha Mukherjee",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:White-bellied_Sea-Eagle_in_Sundarbans_National_Park_October_2025_by_Tisha_Mukherjee_03.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP042",
+        "category":  "Mammals",
+        "species":  "Chimpanzee",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/A_chimpanzee_%28Pan_troglodytes%29.jpg/960px-A_chimpanzee_%28Pan_troglodytes%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:A chimpanzee (Pan troglodytes).jpg",
+                      "author":  "Vasil Vyagov",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:A_chimpanzee_(Pan_troglodytes).jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP043",
+        "category":  "Birds",
+        "species":  "Emu",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/HeadofEmu.jpg/960px-HeadofEmu.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:HeadofEmu.jpg",
+                      "author":  "Relativity",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:HeadofEmu.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP044",
+        "category":  "Birds",
+        "species":  "Cassowary",
+        "photo":  {
+                      "url":  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Close-up_shot_of_a_Cassowary.jpg/960px-Close-up_shot_of_a_Cassowary.jpg",
+                      "title":  "Close-up shot of a Cassowary.jpg",
+                      "author":  "WhiteducksIG",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Close-up_shot_of_a_Cassowary.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP045",
+        "category":  "Birds",
+        "species":  "Cassowary",
+        "photo":  {
+                      "url":  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Close-up_shot_of_a_Cassowary.jpg/960px-Close-up_shot_of_a_Cassowary.jpg",
+                      "title":  "Close-up shot of a Cassowary.jpg",
+                      "author":  "WhiteducksIG",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Close-up_shot_of_a_Cassowary.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP046",
+        "category":  "Mammals",
+        "species":  "Bennett\u0027s Wallaby",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Macropus_rufogriseus_Red-necked_wallaby_Linville_Rd_Linville_Queensland_P1030044.jpg/960px-Macropus_rufogriseus_Red-necked_wallaby_Linville_Rd_Linville_Queensland_P1030044.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Macropus rufogriseus Red-necked wallaby Linville Rd Linville Queensland P1030044.jpg",
+                      "author":  "John Robert McPherson",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Macropus_rufogriseus_Red-necked_wallaby_Linville_Rd_Linville_Queensland_P1030044.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+                      "assetPath":  "assets/images/animals/bennett_s_wallaby.jpg"
+                  }
+    },
+    {
+        "id":  "WP047",
+        "category":  "Mammals",
+        "species":  "Wild Boar",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1d/Wild_Boar_Habbitat_2.jpg/960px-Wild_Boar_Habbitat_2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Wild Boar Habbitat 2.jpg",
+                      "author":  "Richard Bartz, Munich Makro Freak",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Wild_Boar_Habbitat_2.jpg",
+                      "license":  "CC BY-SA 2.5",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/2.5"
+                  }
+    },
+    {
+        "id":  "WP048",
+        "category":  "Mammals",
+        "species":  "Lechwe",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/Kobus_leche_leche_207414151.jpg/960px-Kobus_leche_leche_207414151.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Kobus leche leche 207414151.jpg",
+                      "author":  "Scott Crabtree",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Kobus_leche_leche_207414151.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP049",
+        "category":  "Mammals",
+        "species":  "Scimitar-horned Oryx",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Oryx_dammah_290501738.jpg/960px-Oryx_dammah_290501738.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Oryx dammah 290501738.jpg",
+                      "author":  "Justin Philbois",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Oryx_dammah_290501738.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP050",
+        "category":  "Mammals",
+        "species":  "Rhinoceros",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Rhinoceros_in_South_Africa_adjusted.jpg/960px-Rhinoceros_in_South_Africa_adjusted.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Rhinoceros in South Africa adjusted.jpg",
+                      "author":  "Komencanto, modified by ArtMechanic",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Rhinoceros_in_South_Africa_adjusted.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP051",
+        "category":  "Mammals",
+        "species":  "Sheep",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Flock_of_sheep.jpg/960px-Flock_of_sheep.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Flock of sheep.jpg",
+                      "author":  "Keith Weller",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Flock_of_sheep.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP052",
+        "category":  "Mammals",
+        "species":  "Greater Kudu",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Tragelaphus_strepsiceros_%E2%99%82_%28head%29.jpg/960px-Tragelaphus_strepsiceros_%E2%99%82_%28head%29.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Tragelaphus strepsiceros ♂ (head).jpg",
+                      "author":  "Hans Hillewaert",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Tragelaphus_strepsiceros_%E2%99%82_(head).jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP053",
+        "category":  "Birds",
+        "species":  "Ostrich",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Struthio_camelus_%28captive%29_in_Jardim_Zool%C3%B3gico_de_Curitiba.jpg/960px-Struthio_camelus_%28captive%29_in_Jardim_Zool%C3%B3gico_de_Curitiba.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Struthio camelus (captive) in Jardim Zoológico de Curitiba.jpg",
+                      "author":  "Wilfredor",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Struthio_camelus_(captive)_in_Jardim_Zool%C3%B3gico_de_Curitiba.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP054",
+        "category":  "Mammals",
+        "species":  "Wild Horse",
+        "photo":  {
+                      "url":  "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Wild_Horses_In_Theodore_Roosevelt_National_Park.jpg/960px-Wild_Horses_In_Theodore_Roosevelt_National_Park.jpg",
+                      "title":  "Wild Horses In Theodore Roosevelt National Park.jpg",
+                      "author":  "Podruznik",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Wild_Horses_In_Theodore_Roosevelt_National_Park.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/zero/1.0"
+                  }
+    },
+    {
+        "id":  "WP055",
+        "category":  "Mammals",
+        "species":  "Lion",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Lion_%28Panthera_leo%29_male_6y.jpg/960px-Lion_%28Panthera_leo%29_male_6y.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Lion (Panthera leo) male 6y.jpg",
+                      "author":  "Charles J. Sharp",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Lion_(Panthera_leo)_male_6y.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP056",
+        "category":  "Mammals",
+        "species":  "Horse",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Horse_in_T%C3%A1rcoles_River.jpg/960px-Horse_in_T%C3%A1rcoles_River.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Horse in Tárcoles River.jpg",
+                      "author":  "Bernard Gagnon",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Horse_in_T%C3%A1rcoles_River.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP057",
+        "category":  "Mammals",
+        "species":  "Donkey",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/%C3%82ne_d%27Ethiopie.jpg/960px-%C3%82ne_d%27Ethiopie.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Âne d\u0027Ethiopie.jpg",
+                      "author":  "G. Severeyns",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:%C3%82ne_d%27Ethiopie.jpg",
+                      "license":  "Public domain",
+                      "licenseUrl":  "https://creativecommons.org/publicdomain/mark/1.0/"
+                  }
+    },
+    {
+        "id":  "WP061",
+        "category":  "Birds",
+        "species":  "Swan",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/Mute_swan_%28Cygnus_olor%29_looking_for_food_in_waves%2C_Windermere%2C_England.jpg/960px-Mute_swan_%28Cygnus_olor%29_looking_for_food_in_waves%2C_Windermere%2C_England.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Mute swan (Cygnus olor) looking for food in waves, Windermere, England.jpg",
+                      "author":  "Michal Klajban",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Mute_swan_(Cygnus_olor)_looking_for_food_in_waves,_Windermere,_England.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP062",
+        "category":  "Mammals",
+        "species":  "Sloth Bear",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/Sloth_bear_%28Melursus_ursinus%29_on_the_trails_at_PTR.jpg/960px-Sloth_bear_%28Melursus_ursinus%29_on_the_trails_at_PTR.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Sloth bear (Melursus ursinus) on the trails at PTR.jpg",
+                      "author":  "Pixel009",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Sloth_bear_(Melursus_ursinus)_on_the_trails_at_PTR.jpg",
+                      "license":  "CC0",
+                      "licenseUrl":  "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+                  }
+    },
+    {
+        "id":  "WP063",
+        "category":  "Mammals",
+        "species":  "Black Jaguar",
+        "photo":  {
+                      "url":  "https://upload.wikimedia.org/wikipedia/commons/a/a7/The_Black_Jaguar_White_Tiger%E2%84%A2_Foundation_cubs.jpeg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail_unscaled",
+                      "title":  "File:The Black Jaguar White Tiger™ Foundation cubs.jpeg",
+                      "author":  "BJWT",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:The_Black_Jaguar_White_Tiger%E2%84%A2_Foundation_cubs.jpeg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    },
+    {
+        "id":  "WP065",
+        "category":  "Mammals",
+        "species":  "Llama",
+        "photo":  {
+                      "url":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Lama_glama_Laguna_Colorada_2.jpg/960px-Lama_glama_Laguna_Colorada_2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                      "title":  "File:Lama glama Laguna Colorada 2.jpg",
+                      "author":  "kallerna",
+                      "sourceUrl":  "https://commons.wikimedia.org/wiki/File:Lama_glama_Laguna_Colorada_2.jpg",
+                      "license":  "CC BY-SA 4.0",
+                      "licenseUrl":  "https://creativecommons.org/licenses/by-sa/4.0"
+                  }
+    }
+]

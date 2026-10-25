@@ -9,16 +9,16 @@ void main() {
     final semantics = tester.ensureSemantics();
     addTearDown(semantics.dispose);
 
-    await tester.pumpWidget(const ZooMapApp());
+    await tester.pumpWidget(const ZooMapApp(startIn3dMode: false));
     await tester.pumpAndSettle();
 
-    expect(find.text('Dehiwala Zoo Map'), findsOneWidget);
+    expect(find.text('Dehiwala Zoo'), findsOneWidget);
     expect(find.text('Locate Me'), findsOneWidget);
 
     await tester.tap(find.bySemanticsLabel('Aquarium Entrance'));
     await tester.pumpAndSettle();
 
     expect(find.text('Aquarium Entrance'), findsOneWidget);
-    expect(find.text('Category: facility'), findsOneWidget);
+    expect(find.text('Facility'), findsOneWidget);
   });
 }
