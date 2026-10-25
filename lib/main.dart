@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
@@ -14,10 +16,25 @@ void main() {
   runApp(const ZooMapApp());
 }
 
-class ZooMapApp extends StatelessWidget {
+class ZooMapApp extends StatefulWidget {
   const ZooMapApp({super.key, this.startIn3dMode = true});
 
   final bool startIn3dMode;
+
+  @override
+  State<ZooMapApp> createState() => _ZooMapAppState();
+}
+
+class _ZooMapAppState extends State<ZooMapApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark
+          ? ThemeMode.light
+          : ThemeMode.dark;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +54,47 @@ class ZooMapApp extends StatelessWidget {
           centerTitle: false,
         ),
       ),
-      home: ZooMapScreen(startIn3dMode: startIn3dMode),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF76C893),
+          brightness: Brightness.dark,
+          surface: const Color(0xFF1C2922),
+        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFF111A15),
+        navigationBarTheme: const NavigationBarThemeData(
+          backgroundColor: Color(0xFF1C2922),
+          indicatorColor: Color(0xFF315A3D),
+        ),
+        cardTheme: CardThemeData(
+          color: const Color(0xFF1C2922),
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+      ),
+      themeMode: _themeMode,
+      home: ZooMapScreen(
+        startIn3dMode: widget.startIn3dMode,
+        isDarkMode: _themeMode == ThemeMode.dark,
+        onToggleTheme: _toggleTheme,
+      ),
     );
   }
 }
 
 class ZooMapScreen extends StatefulWidget {
-  const ZooMapScreen({super.key, this.startIn3dMode = true});
+  const ZooMapScreen({
+    super.key,
+    this.startIn3dMode = true,
+    this.isDarkMode = false,
+    this.onToggleTheme,
+  });
 
   final bool startIn3dMode;
+  final bool isDarkMode;
+  final VoidCallback? onToggleTheme;
 
   @override
   State<ZooMapScreen> createState() => _ZooMapScreenState();
@@ -68,27 +117,82 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
   final ValueNotifier<List<ZooWaypoint>> _visibleWaypoints =
       ValueNotifier<List<ZooWaypoint>>([]);
   List<ZooWaypoint> _allWaypoints = const [];
-  Map<String, AnimalPhoto> _animalPhotos = const {};
+  final Map<int, Future<ui.Image>> _cartoonAtlasCache = {};
   String _selectedAnimalGroup = 'All';
   String _selectedCategory = 'All';
   late final bool _is3dMode;
+  bool _isMap3dView = true;
   maplibre.MapLibreMapController? _mapLibreController;
   bool _mapLibreStyleReady = false;
   LatLng? _pendingMapTarget;
   double _pendingMapZoom = 17;
   ZooMapExtent? _zooMapExtent;
+  ZooMapExtent? _zooVisitExtent;
 
   static const _mapLibreStyle = 'https://tiles.openfreemap.org/styles/liberty';
+  static const _categories = ['All', 'Animals', 'Facilities'];
   static const _waypointSourceId = 'zoo-waypoints';
   static const _routeSourceId = 'zoo-routes';
   static const _visitorSourceId = 'visitor-location';
+  static const _facilityPinImageId = 'zoo-facility-pin';
+  static const _landmarkPinImageId = 'zoo-landmark-pin';
 
-  static const _categories = ['All', 'Animals', 'Facilities'];
+  String _enclosureImageId(ZooWaypoint waypoint) =>
+      'zoo-enclosure-${waypoint.id}';
 
-  AnimalPhoto? _photoFor(ZooWaypoint waypoint) => _animalPhotos[waypoint.id];
+  static const _cartoonFrames = <String, int>{
+    'ostrich': 0,
+    'crowned crane': 1,
+    'cassowary': 2,
+    'black swan': 3,
+    'oryx / gaur': 4,
+    'blue-and-yellow macaw / scarlet macaw': 5,
+    'camel': 7,
+    'brown bear': 8,
+    'fox': 9,
+    'bengal tiger': 10,
+    'eurasian otter': 11,
+    'meerkat': 12,
+    'jungle cat': 13,
+    'ring-tailed lemur': 14,
+    'purple-faced langur': 15,
+    'grey langur': 16,
+    'white toque monkey': 17,
+    'hippopotamus': 18,
+    'capybara': 19,
+    'elephant': 20,
+    'deer': 21,
+    'nilgai / hog deer / muntjac': 22,
+    'hamadryas baboon': 25,
+    'lion': 26,
+    'african lion': 27,
+    'chimpanzee': 28,
+    'mule': 29,
+    'brahminy kite / mountain hawk-eagle': 30,
+    'white-bellied sea eagle': 32,
+    'emu': 33,
+    "bennett's wallaby": 34,
+    'wild boar': 35,
+    'lechwe': 36,
+    'scimitar-horned oryx': 37,
+    'rhinoceros': 38,
+    'sheep': 39,
+    'greater kudu': 40,
+    'wild horse': 41,
+    'horse': 42,
+    'donkey': 43,
+    'swan': 44,
+    'sloth bear': 45,
+    'black jaguar / jaguar': 46,
+    'llama': 47,
+  };
 
   String _animalGroup(String name) {
-    final species = name.replaceFirst(RegExp(r'\s+\d+$'), '').split('/').first.trim();
+    final species = name
+        .replaceFirst(RegExp(r'\s+\d+$'), '')
+        .split('/')
+        .first
+        .trim();
     const birds = {
       'Ostrich',
       'Crowned Crane',
@@ -119,6 +223,9 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
       ..dispose();
     _visibleWaypoints.removeListener(_onVisibleWaypointsChanged);
     _visibleWaypoints.dispose();
+    for (final atlas in _cartoonAtlasCache.values) {
+      unawaited(atlas.then((image) => image.dispose()));
+    }
     super.dispose();
   }
 
@@ -148,6 +255,8 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
         include(point);
       }
     }
+
+    _zooVisitExtent = (south: south, west: west, north: north, east: east);
 
     final latitudePadding = (north - south) * 0.15;
     final longitudePadding = (east - west) * 0.12;
@@ -223,6 +332,7 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
   void _selectTab(int index) {
     FocusScope.of(context).unfocus();
     if (index != 0) {
+      _selectedCategory = 'All';
       _searchController.clear();
       _isSearchExpanded = false;
     }
@@ -230,19 +340,24 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
   }
 
   Widget _buildDirectory(ZooMapData data, String category) {
-    final allLocations = data.waypoints
-        .where((waypoint) => waypoint.category.toLowerCase() == category)
-        .toList()
-      ..sort((first, second) => first.name.compareTo(second.name));
+    final allLocations =
+        data.waypoints
+            .where((waypoint) => waypoint.category.toLowerCase() == category)
+            .toList()
+          ..sort((first, second) => first.name.compareTo(second.name));
     final locations = category == 'animal' && _selectedAnimalGroup != 'All'
-        ? allLocations.where((waypoint) => _animalGroup(waypoint.name) == _selectedAnimalGroup).toList()
+        ? allLocations
+              .where(
+                (waypoint) =>
+                    _animalGroup(waypoint.name) == _selectedAnimalGroup,
+              )
+              .toList()
         : allLocations;
-    final title = category == 'animal' ? 'Animals' : 'Facilities';
-    final colors = Theme.of(context).colorScheme;
+    if (category == 'animal') {
+      return _buildAnimalCollectionGrid(locations);
+    }
 
-    final featuredAnimals = category == 'animal'
-        ? locations.where((waypoint) => _photoFor(waypoint) != null).take(8).toList()
-        : const <ZooWaypoint>[];
+    final colors = Theme.of(context).colorScheme;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
@@ -254,57 +369,40 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
+                  Text(
+                    'Facilities',
+                    style: Theme.of(context).textTheme.headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
                   const SizedBox(height: 5),
-                  Text(category == 'animal' ? 'Discover the wildlife at Dehiwala Zoo' : 'Everything you need for an easy visit', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
+                  Text(
+                    'Everything you need for an easy visit',
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: colors.onSurfaceVariant),
+                  ),
                 ],
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              decoration: BoxDecoration(color: colors.primaryContainer, borderRadius: BorderRadius.circular(20)),
-              child: Text('${locations.length} ${category == 'animal' ? 'animals' : 'places'}', style: TextStyle(color: colors.onPrimaryContainer, fontWeight: FontWeight.w700, fontSize: 12)),
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${locations.length} places',
+                style: TextStyle(
+                  color: colors.onPrimaryContainer,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
             ),
+            _themeToggleButton(),
           ],
         ),
-        if (category == 'animal') ...[
-          const SizedBox(height: 18),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final group in const ['All', 'Mammals', 'Birds']) ...[
-                  if (group != 'All') const SizedBox(width: 8),
-                  FilterChip(
-                    label: Text(group),
-                    selected: _selectedAnimalGroup == group,
-                    showCheckmark: false,
-                    onSelected: (_) => setState(() => _selectedAnimalGroup = group),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
-        if (featuredAnimals.isNotEmpty) ...[
-          Text('Featured wildlife', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 190,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: featuredAnimals.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final waypoint = featuredAnimals[index];
-                return _buildFeaturedAnimalCard(waypoint);
-              },
-            ),
-          ),
-        ],
         const SizedBox(height: 24),
-        Text(category == 'animal' ? (_selectedAnimalGroup == 'All' ? 'All animals' : _selectedAnimalGroup) : 'Zoo facilities', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+        Text('Zoo facilities', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 10),
         for (final waypoint in locations)
           Padding(
@@ -313,13 +411,31 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
               color: colors.surface,
               elevation: 0,
               margin: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.45))),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(
+                  color: colors.outlineVariant.withValues(alpha: 0.45),
+                ),
+              ),
               child: ListTile(
                 contentPadding: const EdgeInsets.fromLTRB(10, 6, 14, 6),
                 leading: _buildWaypointThumbnail(waypoint),
-                title: Text(waypoint.name, style: const TextStyle(fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: Text(waypoint.needsReview ? 'Name needs verification' : category == 'animal' ? 'Animal habitat' : 'Visitor facility'),
-                trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: colors.onSurfaceVariant),
+                title: Text(
+                  waypoint.name,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  waypoint.needsReview
+                      ? 'Name needs verification'
+                      : 'Visitor facility',
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: colors.onSurfaceVariant,
+                ),
                 onTap: () => _openWaypointFromDirectory(waypoint),
               ),
             ),
@@ -328,16 +444,192 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     );
   }
 
+  Widget _buildAnimalCollectionGrid(List<ZooWaypoint> animals) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final colors = Theme.of(context).colorScheme;
+        final compact = constraints.maxHeight < 560;
+        final columns = constraints.maxWidth >= 720
+            ? 10
+            : constraints.maxWidth >= 520
+            ? 8
+            : compact
+            ? 9
+            : 7;
+        final rows = math.max(1, (animals.length + columns - 1) ~/ columns);
+        const headerHeight = 118.0;
+        const rowGap = 3.0;
+        const gridVerticalPadding = 6.0;
+        final tileHeight = math.max(
+          34.0,
+          (constraints.maxHeight -
+                  headerHeight -
+                  (rows - 1) * rowGap -
+                  gridVerticalPadding) /
+              rows,
+        );
+        final cellWidth =
+            (constraints.maxWidth - 24 - (columns - 1) * rowGap) / columns;
+        final imageSide = math.min(cellWidth - 6, tileHeight - 18);
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 2),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Animal collection',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        Text(
+                          'All zoo residents, ready to discover',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colors.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      '${animals.length} animals',
+                      style: TextStyle(
+                        color: colors.onPrimaryContainer,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  _themeToggleButton(),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Wrap(
+                spacing: 6,
+                children: [
+                  for (final group in const ['All', 'Mammals', 'Birds'])
+                    FilterChip(
+                      label: Text(group),
+                      selected: _selectedAnimalGroup == group,
+                      showCheckmark: false,
+                      visualDensity: VisualDensity.compact,
+                      onSelected: (_) =>
+                          setState(() => _selectedAnimalGroup = group),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 1, bottom: 2),
+              child: Text(
+                'Tap a character to visit its habitat',
+                style: Theme.of(context).textTheme.labelSmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
+              ),
+            ),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 3),
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: animals.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisExtent: tileHeight,
+                  crossAxisSpacing: rowGap,
+                  mainAxisSpacing: rowGap,
+                ),
+                itemBuilder: (context, index) {
+                  final waypoint = animals[index];
+                  return Tooltip(
+                    message: waypoint.name,
+                    child: Material(
+                      color: colors.surfaceContainerHighest.withValues(
+                        alpha: 0.6,
+                      ),
+                      borderRadius: BorderRadius.circular(13),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(13),
+                        onTap: () => _openWaypointFromDirectory(waypoint),
+                        child: Padding(
+                          padding: const EdgeInsets.all(3),
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                width: imageSide,
+                                height: imageSide,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: _buildAnimalIllustration(
+                                    waypoint.name,
+                                    width: imageSide,
+                                    height: imageSide,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Expanded(
+                                child: Center(
+                                  child: Text(
+                                    waypoint.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _themeToggleButton() => IconButton.filledTonal(
+    tooltip: widget.isDarkMode
+        ? 'Switch to light theme'
+        : 'Switch to dark theme',
+    onPressed: widget.onToggleTheme,
+    icon: Icon(
+      widget.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+    ),
+  );
+
   Widget _buildWaypointThumbnail(ZooWaypoint waypoint) {
-    final photo = _photoFor(waypoint);
-    if (photo != null) {
+    if (waypoint.category.toLowerCase() == 'animal') {
       return ClipRRect(
         borderRadius: BorderRadius.circular(13),
-        child: SizedBox(
-          width: 54,
-          height: 54,
-          child: _buildPhotoImage(photo, width: 54, height: 54),
-        ),
+        child: _buildAnimalIllustration(waypoint.name, width: 54, height: 54),
       );
     }
     return _waypointIcon(waypoint);
@@ -352,83 +644,77 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     );
   }
 
-  Widget _buildPhotoImage(
-    AnimalPhoto photo, {
-    double? width,
-    double? height,
-    BoxFit fit = BoxFit.cover,
-  }) {
-    Widget failedImage() => Container(
-      width: width,
-      height: height,
-      color: const Color(0xFFE1E8DC),
-      child: const Icon(Icons.pets_rounded, size: 36),
-    );
+  int _cartoonFrameFor(String animalName) {
+    final species = animalName
+        .replaceFirst(RegExp(r'\s+\d+$'), '')
+        .trim()
+        .toLowerCase();
+    return _cartoonFrames[species] ?? 0;
+  }
 
-    if (photo.assetPath != null) {
-      return Image.asset(
-        photo.assetPath!,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (_, _, _) => failedImage(),
-      );
-    }
-    return Image.network(
-      photo.url,
-      width: width,
-      height: height,
-      fit: fit,
-      loadingBuilder: (context, child, progress) => progress == null
-          ? child
-          : Container(width: width, height: height, color: const Color(0xFFE1E8DC)),
-      errorBuilder: (_, _, _) => failedImage(),
+  Widget _buildAnimalSpriteCrop(String animalName, {required double size}) {
+    final frame = _cartoonFrameFor(animalName);
+    final localFrame = frame % 16;
+    final asset =
+        'assets/images/animals/cartoon_animals_${frame ~/ 16 + 1}.png';
+    return ClipRect(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: OverflowBox(
+          minWidth: size * 4,
+          maxWidth: size * 4,
+          minHeight: size * 4,
+          maxHeight: size * 4,
+          alignment: Alignment(
+            -1 + (localFrame % 4) * (2 / 3),
+            -1 + (localFrame ~/ 4) * (2 / 3),
+          ),
+          child: Image.asset(
+            asset,
+            width: size * 4,
+            height: size * 4,
+            fit: BoxFit.fill,
+            errorBuilder: (_, _, _) => const Icon(
+              Icons.pets_rounded,
+              size: 42,
+              color: Color(0xFF39734B),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildFeaturedAnimalCard(ZooWaypoint waypoint) {
-    final photo = _photoFor(waypoint)!;
-    return Semantics(
-      button: true,
-      label: 'Show ${waypoint.name} on the map',
-      child: GestureDetector(
-        onTap: () => _openWaypointFromDirectory(waypoint),
-        child: SizedBox(
-          width: 260,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(22),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                _buildPhotoImage(photo),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Color(0xCC101910)], stops: [0.42, 1]),
-                  ),
-                ),
-                Positioned(
-                  left: 16,
-                  right: 14,
-                  bottom: 14,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(waypoint.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
-                            const SizedBox(height: 3),
-                  Text('Photo by ${photo.author} | Reference image', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_outward_rounded, color: Colors.white, size: 20),
-                    ],
-                  ),
-                ),
-              ],
+  Widget _buildAnimalIllustration(
+    String animalName, {
+    required double width,
+    required double height,
+  }) {
+    final spriteSize = math.min(width, height);
+
+    return SizedBox(
+      width: width,
+      height: height,
+      child: CustomPaint(
+        painter: AnimalHabitatBackdropPainter(animalName),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Center(child: _buildAnimalSpriteCrop(animalName, size: spriteSize)),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.9),
+                shadows: const [
+                  Shadow(color: Color(0x44344B35), blurRadius: 5),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -443,23 +729,72 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     }
     if (_is3dMode && mapController != null) {
       unawaited(
-        mapController.animateCamera(
-          maplibre.CameraUpdate.newCameraPosition(
-            maplibre.CameraPosition(
-              target: maplibre.LatLng(point.latitude, point.longitude),
-              zoom: zoom,
-              tilt: 55,
-              bearing: 20,
-            ),
-          ),
-          duration: const Duration(milliseconds: 850),
-        ).then<void>((_) {}).catchError((Object error) {
-          debugPrint('Could not animate 3D map camera: $error');
-        }),
+        mapController
+            .animateCamera(
+              maplibre.CameraUpdate.newCameraPosition(
+                maplibre.CameraPosition(
+                  target: maplibre.LatLng(point.latitude, point.longitude),
+                  zoom: zoom,
+                  tilt: _isMap3dView ? 55 : 0,
+                  bearing: _isMap3dView ? 20 : 0,
+                ),
+              ),
+              duration: const Duration(milliseconds: 850),
+            )
+            .then<void>((_) {})
+            .catchError((Object error) {
+              debugPrint('Could not animate 3D map camera: $error');
+            }),
       );
       return;
     }
     _mapController.move(point, zoom);
+  }
+
+  void _toggleMapPerspective() {
+    if (!_is3dMode) return;
+    final show3d = !_isMap3dView;
+    setState(() => _isMap3dView = show3d);
+
+    final controller = _mapLibreController;
+    if (controller == null) return;
+    final camera = controller.cameraPosition;
+    final target = camera?.target ?? const maplibre.LatLng(6.8565, 79.8728);
+    unawaited(
+      controller
+          .animateCamera(
+            maplibre.CameraUpdate.newCameraPosition(
+              maplibre.CameraPosition(
+                target: target,
+                zoom: camera?.zoom ?? 17,
+                tilt: show3d ? 55 : 0,
+                bearing: show3d ? 20 : 0,
+              ),
+            ),
+            duration: const Duration(milliseconds: 650),
+          )
+          .then<void>((_) {})
+          .catchError((Object error) {
+            debugPrint('Could not change map perspective: $error');
+          }),
+    );
+  }
+
+  bool _isInsideZooArea(LatLng point) {
+    final extent = _zooVisitExtent;
+    if (extent == null) return true;
+
+    // Tighten the recorded zoo footprint slightly so locations just outside
+    // its edge do not count as an in-zoo visit.
+    const edgeBufferMeters = 12.0;
+    final latitudeBuffer = edgeBufferMeters / 111320;
+    final longitudeBuffer =
+        edgeBufferMeters /
+        (111320 * math.cos(point.latitude * math.pi / 180).abs());
+    return point.latitude >= extent.south + latitudeBuffer &&
+        point.latitude <= extent.north - latitudeBuffer &&
+        point.longitude >= extent.west + longitudeBuffer &&
+        point.longitude <= extent.east - longitudeBuffer;
   }
 
   Map<String, dynamic> _waypointsGeoJson(List<ZooWaypoint> waypoints) => {
@@ -472,6 +807,11 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
           'id': waypoint.id,
           'name': waypoint.name,
           'category': waypoint.category.toLowerCase(),
+          'icon': waypoint.category.toLowerCase() == 'animal'
+              ? _enclosureImageId(waypoint)
+              : waypoint.category.toLowerCase() == 'facility'
+              ? _facilityPinImageId
+              : _landmarkPinImageId,
         },
         'geometry': {
           'type': 'Point',
@@ -517,41 +857,139 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     if (controller == null) return;
 
     try {
+      await _hideBaseBuildingLayers(controller);
+      var zooIllustrationsReady = true;
+      try {
+        for (final waypoint in data.waypoints.where(
+          (waypoint) => waypoint.category.toLowerCase() == 'animal',
+        )) {
+          await controller.addImage(
+            _enclosureImageId(waypoint),
+            await _renderMapEnclosure(waypoint.name),
+          );
+        }
+        await controller.addImage(
+          _facilityPinImageId,
+          await _renderMapPin('facility'),
+        );
+        await controller.addImage(
+          _landmarkPinImageId,
+          await _renderMapPin('landmark'),
+        );
+      } catch (error) {
+        zooIllustrationsReady = false;
+        debugPrint(
+          'Could not add zoo map illustrations; using simple pins: $error',
+        );
+      }
       await controller.addGeoJsonSource(
         _routeSourceId,
         _routesGeoJson(data.routes),
       );
       await controller.addLineLayer(
         _routeSourceId,
+        'zoo-route-outline',
+        const maplibre.LineLayerProperties(
+          lineColor: '#FFFDF2',
+          lineWidth: 9,
+          lineOpacity: 0.94,
+          lineCap: 'round',
+          lineJoin: 'round',
+        ),
+      );
+      await controller.addLineLayer(
+        _routeSourceId,
         'zoo-route-lines',
         const maplibre.LineLayerProperties(
-          lineColor: '#438565',
-          lineWidth: 3.5,
-          lineOpacity: 0.9,
+          lineColor: '#398764',
+          lineWidth: 4,
+          lineOpacity: 1,
+          lineCap: 'round',
+          lineJoin: 'round',
         ),
       );
       await controller.addGeoJsonSource(
         _waypointSourceId,
         _waypointsGeoJson(_visibleWaypoints.value),
       );
-      await controller.addCircleLayer(
-        _waypointSourceId,
-        'zoo-location-points',
-        const maplibre.CircleLayerProperties(
-          circleRadius: 9,
-          circleColor: [
-            'match',
-            ['get', 'category'],
-            'animal',
-            '#388454',
-            'facility',
-            '#D87932',
-            '#596875',
-          ],
-          circleStrokeColor: '#FFFFFF',
-          circleStrokeWidth: 2.5,
-        ),
-      );
+      if (zooIllustrationsReady) {
+        try {
+          await controller.addSymbolLayer(
+            _waypointSourceId,
+            'zoo-animal-enclosures-and-locations',
+            const maplibre.SymbolLayerProperties(
+              iconImage: ['get', 'icon'],
+              iconSize: [
+                'case',
+                [
+                  '==',
+                  ['get', 'category'],
+                  'animal',
+                ],
+                [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  17,
+                  0.38,
+                  18,
+                  0.58,
+                  19,
+                  0.78,
+                  20,
+                  0.95,
+                ],
+                [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  17,
+                  0.34,
+                  20,
+                  0.48,
+                ],
+              ],
+              iconAnchor: 'bottom',
+              iconAllowOverlap: true,
+              iconIgnorePlacement: true,
+              iconOptional: true,
+              iconPitchAlignment: 'viewport',
+              iconRotationAlignment: 'viewport',
+              textField: ['get', 'name'],
+              textFont: ['Noto Sans Regular'],
+              textSize: 11,
+              textColor: '#234E38',
+              textHaloColor: '#FFFDF4',
+              textHaloWidth: 2,
+              textAnchor: 'bottom',
+              textOffset: [0, 0.35],
+              textAllowOverlap: false,
+              textOptional: true,
+              textPitchAlignment: 'viewport',
+              textRotationAlignment: 'viewport',
+            ),
+            minzoom: 16.5,
+          );
+        } catch (error) {
+          zooIllustrationsReady = false;
+          debugPrint(
+            'Could not add zoo illustration layer; using simple pins: $error',
+          );
+        }
+      }
+      if (!zooIllustrationsReady) {
+        await controller.addCircleLayer(
+          _waypointSourceId,
+          'zoo-waypoint-fallback',
+          const maplibre.CircleLayerProperties(
+            circleRadius: 7,
+            circleColor: '#286A45',
+            circleStrokeColor: '#FFFDF2',
+            circleStrokeWidth: 2,
+          ),
+          minzoom: 16.5,
+        );
+      }
       await controller.addGeoJsonSource(
         _visitorSourceId,
         _currentPosition == null
@@ -579,7 +1017,9 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
       }
     } catch (error) {
       debugPrint('Could not load 3D zoo map layers: $error');
-      _showMessage('Could not load the 3D map. Check your internet connection.');
+      _showMessage(
+        'Could not load the 3D map. Check your internet connection.',
+      );
     }
   }
 
@@ -587,6 +1027,80 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     'type': 'FeatureCollection',
     'features': <dynamic>[],
   };
+
+  Future<void> _hideBaseBuildingLayers(
+    maplibre.MapLibreMapController controller,
+  ) async {
+    try {
+      final layerIds = await controller.getLayerIds();
+      for (final layerId in layerIds) {
+        final normalizedId = layerId.toString().toLowerCase();
+        if (normalizedId.contains('building') ||
+            normalizedId.contains('extrusion')) {
+          await controller.setLayerVisibility(layerId.toString(), false);
+        }
+      }
+    } catch (error) {
+      // Keep the map usable even if the remote style does not expose layer ids.
+      debugPrint('Could not hide base map buildings: $error');
+    }
+  }
+
+  Future<Uint8List> _renderMapPin(String category) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    ZooMapPinPainter(category).paint(canvas, const Size(128, 152));
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(128, 152);
+    final data = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
+    picture.dispose();
+    return data!.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
+
+  Future<Uint8List> _renderMapEnclosure(String animalName) async {
+    final frame = _cartoonFrameFor(animalName);
+    final atlas = await _cartoonAtlasImage(frame ~/ 16 + 1);
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    ZooEnclosurePainter(
+      animalName,
+      includeAnimal: false,
+    ).paint(canvas, const Size(128, 104));
+    final cellSize = atlas.width / 4;
+    final localFrame = frame % 16;
+    canvas.drawImageRect(
+      atlas,
+      Rect.fromLTWH(
+        localFrame % 4 * cellSize,
+        localFrame ~/ 4 * cellSize,
+        cellSize,
+        cellSize,
+      ),
+      const Rect.fromLTWH(28, 24, 72, 72),
+      Paint()..filterQuality = FilterQuality.high,
+    );
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(128, 104);
+    final data = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
+    picture.dispose();
+    if (data == null) {
+      throw StateError('Could not render an enclosure for $animalName');
+    }
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
+
+  Future<ui.Image> _cartoonAtlasImage(int sheet) =>
+      _cartoonAtlasCache.putIfAbsent(sheet, () async {
+        final data = await rootBundle.load(
+          'assets/images/animals/cartoon_animals_$sheet.png',
+        );
+        final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+        final frame = await codec.getNextFrame();
+        codec.dispose();
+        return frame.image;
+      });
 
   void _onMapLibreTap(maplibre.LatLng point) {
     ZooWaypoint? nearest;
@@ -611,11 +1125,11 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     final extent = _zooMapExtent!;
     return maplibre.MapLibreMap(
       styleString: _mapLibreStyle,
-      initialCameraPosition: const maplibre.CameraPosition(
+      initialCameraPosition: maplibre.CameraPosition(
         target: maplibre.LatLng(6.8565, 79.8728),
         zoom: 17,
-        tilt: 55,
-        bearing: 20,
+        tilt: _isMap3dView ? 55 : 0,
+        bearing: _isMap3dView ? 20 : 0,
       ),
       cameraTargetBounds: maplibre.CameraTargetBounds(
         maplibre.LatLngBounds(
@@ -722,6 +1236,7 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                           tooltip: 'Close search',
                           onPressed: () {
                             FocusScope.of(context).unfocus();
+                            _selectedCategory = 'All';
                             _searchController.clear();
                             setState(() => _isSearchExpanded = false);
                           },
@@ -740,34 +1255,40 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                     contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 2,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    for (final category in _categories)
-                      FilterChip(
-                        label: Text(category),
-                        selected: _selectedCategory == category,
-                        showCheckmark: false,
-                        visualDensity: VisualDensity.compact,
-                        onSelected: (_) {
-                          _selectedCategory = category;
-                          _updateFilteredWaypoints();
-                        },
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                const SizedBox(height: 8),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 2,
+                    children: [
+                      for (final category in _categories)
+                        FilterChip(
+                          label: Text(category),
+                          selected: _selectedCategory == category,
+                          showCheckmark: false,
+                          visualDensity: VisualDensity.compact,
+                          onSelected: (_) {
+                            setState(() => _selectedCategory = category);
+                            _updateFilteredWaypoints();
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+                if (showResults)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 4),
                       child: Text(
                         '${matches.length} places',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(color: colors.onSurfaceVariant),
                       ),
                     ),
-                  ],
-                ),
+                  ),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOutCubic,
@@ -787,18 +1308,30 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                                     ListTile(
                                       dense: true,
                                       contentPadding: EdgeInsets.zero,
-                                      leading: CircleAvatar(
-                                        backgroundColor: _markerColor(
-                                          waypoint.category,
-                                        ).withValues(alpha: 0.12),
-                                        foregroundColor: _markerColor(
-                                          waypoint.category,
-                                        ),
-                                        child: Icon(
-                                          _markerIcon(waypoint.category),
-                                          size: 20,
-                                        ),
-                                      ),
+                                      leading:
+                                          waypoint.category.toLowerCase() ==
+                                              'animal'
+                                          ? ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: _buildAnimalIllustration(
+                                                waypoint.name,
+                                                width: 44,
+                                                height: 44,
+                                              ),
+                                            )
+                                          : CircleAvatar(
+                                              backgroundColor: _markerColor(
+                                                waypoint.category,
+                                              ).withValues(alpha: 0.12),
+                                              foregroundColor: _markerColor(
+                                                waypoint.category,
+                                              ),
+                                              child: Icon(
+                                                _markerIcon(waypoint.category),
+                                                size: 20,
+                                              ),
+                                            ),
                                       title: Text(waypoint.name),
                                       subtitle: Text(waypoint.category),
                                       trailing: const Icon(
@@ -824,15 +1357,7 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     final files = await Future.wait([
       rootBundle.loadString('assets/data/waypoints_flutter.json'),
       rootBundle.loadString('assets/data/recorded_route.geojson'),
-      rootBundle.loadString('assets/data/animal_photo_credits.json'),
     ]);
-
-    final photoEntries = jsonDecode(files[2]) as List<dynamic>;
-    _animalPhotos = {
-      for (final item in photoEntries)
-        (item as Map<String, dynamic>)['id'] as String:
-            AnimalPhoto.fromJson(item['photo'] as Map<String, dynamic>),
-    };
 
     // Load the named locations.
     final waypointJson = jsonDecode(files[0]) as List<dynamic>;
@@ -932,7 +1457,9 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
         // GPS reading (for example, indoors).
         position = await Geolocator.getLastKnownPosition();
         if (position == null) {
-          _showMessage('Could not get a location fix. Check GPS and try again.');
+          _showMessage(
+            'Could not get a location fix. Check GPS and try again.',
+          );
           return;
         }
       }
@@ -940,6 +1467,10 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
       if (!mounted) return;
 
       final point = LatLng(position.latitude, position.longitude);
+      if (!_isInsideZooArea(point)) {
+        _showOutsideZooMessage();
+        return;
+      }
 
       setState(() {
         _currentPosition = point;
@@ -972,32 +1503,45 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     }
   }
 
+  void _showOutsideZooMessage() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("The tiger can't find you!"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: _buildAnimalIllustration(
+                'Bengal Tiger',
+                width: 180,
+                height: 140,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '“Roar! You seem to be outside Dehiwala Zoo. Come through the '
+              'gates, then tap Locate Me and I’ll help you explore!”',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showMessage(String message) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  void _showPhotoCredits(AnimalPhoto photo) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Photo credits'),
-        content: SingleChildScrollView(
-          child: SelectableText(
-            'Photo: ${photo.title}\n\n'
-            'Author: ${photo.author}\n\n'
-            'Source: ${photo.sourceUrl}\n\n'
-            'License: ${photo.license}\n'
-            '${photo.licenseUrl}',
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-        ],
-      ),
-    );
   }
 
   IconData _markerIcon(String category) {
@@ -1056,7 +1600,7 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                if (_photoFor(waypoint) case final photo?)
+                if (waypoint.category.toLowerCase() == 'animal')
                   ClipRRect(
                     borderRadius: BorderRadius.circular(22),
                     child: SizedBox(
@@ -1065,7 +1609,16 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          _buildPhotoImage(photo),
+                          Positioned.fill(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) =>
+                                  _buildAnimalIllustration(
+                                    waypoint.name,
+                                    width: constraints.maxWidth,
+                                    height: constraints.maxHeight,
+                                  ),
+                            ),
+                          ),
                           const DecoratedBox(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -1083,9 +1636,34 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(waypoint.name, style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w700)),
+                                Text(
+                                  'ANIMAL COLLECTION',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  waypoint.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                                 const SizedBox(height: 3),
-                                Text('Reference photo by ${photo.author}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                Text(
+                                  '3D cartoon character • Habitat discovery',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -1094,51 +1672,39 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                     ),
                   )
                 else
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 26,
-                      backgroundColor: _markerColor(
-                        waypoint.category,
-                      ).withValues(alpha: 0.12),
-                      foregroundColor: _markerColor(waypoint.category),
-                      child: Icon(_markerIcon(waypoint.category), size: 25),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            waypoint.name,
-                            style: Theme.of(sheetContext)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            waypoint.category[0].toUpperCase() +
-                                waypoint.category.substring(1),
-                            style: Theme.of(sheetContext).textTheme.bodyMedium
-                                ?.copyWith(color: colors.onSurfaceVariant),
-                          ),
-                        ],
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: _markerColor(waypoint.category)
+                            .withValues(alpha: 0.12),
+                        foregroundColor: _markerColor(waypoint.category),
+                        child: Icon(_markerIcon(waypoint.category), size: 25),
                       ),
-                    ),
-                  ],
-                ),
-                if (_photoFor(waypoint) case final photo?) ...[
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton.icon(
-                      onPressed: () => _showPhotoCredits(photo),
-                      icon: const Icon(Icons.info_outline_rounded, size: 18),
-                      label: Text('${photo.license} | Photo credits'),
-                    ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              waypoint.name,
+                              style: Theme.of(sheetContext)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              waypoint.category[0].toUpperCase() +
+                                  waypoint.category.substring(1),
+                              style: Theme.of(sheetContext).textTheme.bodyMedium
+                                  ?.copyWith(color: colors.onSurfaceVariant),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
                 if (waypoint.needsReview) ...[
                   const SizedBox(height: 18),
                   Container(
@@ -1164,6 +1730,22 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
                     style: Theme.of(sheetContext).textTheme.bodyMedium,
                   ),
                 ],
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      _selectTab(0);
+                      _moveMapTo(
+                        LatLng(waypoint.latitude, waypoint.longitude),
+                        18,
+                      );
+                    },
+                    icon: const Icon(Icons.center_focus_strong_rounded),
+                    label: const Text('Center map here'),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Container(
                   width: double.infinity,
@@ -1201,198 +1783,265 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final sectionSubtitle = switch (_selectedTab) {
-      1 => 'Meet the animals',
-      2 => 'Find zoo facilities',
-      _ => 'Explore the zoo',
-    };
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colors.surface,
-        titleSpacing: 20,
-        title: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: colors.primaryContainer,
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: Icon(Icons.pets_rounded, color: colors.primary, size: 21),
-            ),
-            const SizedBox(width: 11),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: FutureBuilder<ZooMapData>(
+          future: _mapDataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    'Could not load the zoo map data.\n\n'
+                    '${snapshot.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }
+
+            final data = snapshot.data!;
+            _zooMapExtent ??= _boundsFor(data);
+            if (_allWaypoints.isEmpty && data.waypoints.isNotEmpty) {
+              _allWaypoints = data.waypoints;
+              _visibleWaypoints.value = _filterWaypoints(_allWaypoints);
+            }
+
+            final mapPage = Stack(
               children: [
-                const Text('Dehiwala Zoo'),
-                Text(
-                  sectionSubtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      body: FutureBuilder<ZooMapData>(
-        future: _mapDataFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  'Could not load the zoo map data.\n\n'
-                  '${snapshot.error}',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-
-          final data = snapshot.data!;
-          _zooMapExtent ??= _boundsFor(data);
-          if (_allWaypoints.isEmpty && data.waypoints.isNotEmpty) {
-            _allWaypoints = data.waypoints;
-            _visibleWaypoints.value = _filterWaypoints(_allWaypoints);
-          }
-
-          final mapPage = Stack(
-            children: [
-              _is3dMode
-                  ? _buildMapLibre(data)
-                  : FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: LatLng(6.8565, 79.8728),
-                  initialZoom: 17,
-                  minZoom: 17,
-                  maxZoom: 19,
-                  cameraConstraint: CameraConstraint.containCenter(
-                    bounds: LatLngBounds(
-                      LatLng(_zooMapExtent!.south, _zooMapExtent!.west),
-                      LatLng(_zooMapExtent!.north, _zooMapExtent!.east),
-                    ),
-                  ),
-                ),
-                children: [
-              // Geographic map background.
-              TileLayer(
-                urlTemplate:
-                    'https://tile.openstreetmap.org/'
-                    '{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.dehiwala_zoo_app',
-              ),
-
-              // Recorded GPS track. Each segment stays separate.
-              PolylineLayer(
-                    simplificationTolerance: 1,
-                polylines: data.routes.map((route) {
-                  return Polyline(
-                    points: route,
-                    color: const Color(0xFF438565),
-                    strokeWidth: 4,
-                  );
-                }).toList(),
-              ),
-
-              // Named animal and facility locations.
-                  ValueListenableBuilder<List<ZooWaypoint>>(
-                    valueListenable: _visibleWaypoints,
-                    builder: (context, waypoints, _) => MarkerLayer(
-                      markers: waypoints.map((waypoint) {
-                        return Marker(
-                          point: LatLng(waypoint.latitude, waypoint.longitude),
-                          width: 48,
-                          height: 48,
-                          child: Semantics(
-                            button: true,
-                            label: waypoint.name,
-                            child: GestureDetector(
-                              onTap: () => _showWaypointDetails(waypoint),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: _markerColor(waypoint.category),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
-                                ),
-                                child: Icon(
-                                  _markerIcon(waypoint.category),
-                                  color: Colors.white,
-                                  size: 23,
-                                ),
+                _is3dMode
+                    ? _buildMapLibre(data)
+                    : FlutterMap(
+                        mapController: _mapController,
+                        options: MapOptions(
+                          initialCenter: LatLng(6.8565, 79.8728),
+                          initialZoom: 17,
+                          minZoom: 17,
+                          maxZoom: 19,
+                          cameraConstraint: CameraConstraint.containCenter(
+                            bounds: LatLngBounds(
+                              LatLng(_zooMapExtent!.south, _zooMapExtent!.west),
+                              LatLng(_zooMapExtent!.north, _zooMapExtent!.east),
+                            ),
                           ),
                         ),
-                      ),
-                        );
-                      }).toList(),
-                    ),
-              ),
+                        children: [
+                          // Geographic map background.
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/'
+                                '{z}/{x}/{y}.png',
+                            userAgentPackageName:
+                                'com.example.dehiwala_zoo_app',
+                          ),
 
-              // Visitor's current position.
-              if (_currentPosition != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _currentPosition!,
-                      width: 48,
-                      height: 48,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 5,
-                              offset: Offset(0, 2),
+                          // Recorded GPS track. Each segment stays separate.
+                          PolylineLayer(
+                            simplificationTolerance: 1,
+                            polylines: data.routes
+                                .map(
+                                  (route) => Polyline(
+                                    points: route,
+                                    color: const Color(0xFFFFFBEB),
+                                    strokeWidth: 10,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                          PolylineLayer(
+                            simplificationTolerance: 1,
+                            polylines: data.routes
+                                .map(
+                                  (route) => Polyline(
+                                    points: route,
+                                    color: const Color(0xFF398764),
+                                    strokeWidth: 4,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+
+                          // Named animal and facility locations.
+                          ValueListenableBuilder<List<ZooWaypoint>>(
+                            valueListenable: _visibleWaypoints,
+                            builder: (context, waypoints, _) => MarkerLayer(
+                              markers: waypoints.map((waypoint) {
+                                return Marker(
+                                  point: LatLng(
+                                    waypoint.latitude,
+                                    waypoint.longitude,
+                                  ),
+                                  width:
+                                      waypoint.category.toLowerCase() ==
+                                          'animal'
+                                      ? 62
+                                      : 48,
+                                  height:
+                                      waypoint.category.toLowerCase() ==
+                                          'animal'
+                                      ? 52
+                                      : 58,
+                                  alignment: Alignment.bottomCenter,
+                                  child: Semantics(
+                                    button: true,
+                                    label: waypoint.name,
+                                    child: GestureDetector(
+                                      onTap: () =>
+                                          _showWaypointDetails(waypoint),
+                                      child:
+                                          waypoint.category.toLowerCase() ==
+                                              'animal'
+                                          ? SizedBox(
+                                              width: 62,
+                                              height: 52,
+                                              child: Stack(
+                                                children: [
+                                                  Positioned.fill(
+                                                    child: CustomPaint(
+                                                      painter:
+                                                          ZooEnclosurePainter(
+                                                            waypoint.name,
+                                                            includeAnimal:
+                                                                false,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  Positioned(
+                                                    left: 13,
+                                                    top: 7,
+                                                    child:
+                                                        _buildAnimalSpriteCrop(
+                                                          waypoint.name,
+                                                          size: 36,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          : CustomPaint(
+                                              size: const Size(48, 58),
+                                              painter: ZooMapPinPainter(
+                                                waypoint.category,
+                                              ),
+                                              child: const SizedBox.expand(),
+                                            ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                             ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.my_location,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                          ),
 
-              // Required OpenStreetMap attribution.
-              RichAttributionWidget(
-                attributions: [
-                  TextSourceAttribution('© OpenStreetMap contributors'),
-                ],
-              ),
-                ],
-              ),
-              Positioned(
-                top: 12,
-                left: 12,
-                right: 12,
-                child: _buildMapSearch(),
-              ),
-            ],
-          );
-          return IndexedStack(
-            index: _selectedTab,
-            children: [
-              mapPage,
-              _buildDirectory(data, 'animal'),
-              _buildDirectory(data, 'facility'),
-            ],
-          );
-        },
+                          // Visitor's current position.
+                          if (_currentPosition != null)
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: _currentPosition!,
+                                  width: 48,
+                                  height: 48,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 3,
+                                      ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 5,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      Icons.my_location,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                          // Required OpenStreetMap attribution.
+                          RichAttributionWidget(
+                            attributions: [
+                              TextSourceAttribution(
+                                '© OpenStreetMap contributors',
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  right: 12,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [_buildMapSearch()],
+                  ),
+                ),
+                if (!_isSearchExpanded)
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_is3dMode) ...[
+                          Tooltip(
+                            message: _isMap3dView
+                                ? 'Switch to 2D'
+                                : 'Switch to 3D',
+                            child: FilledButton.tonalIcon(
+                              onPressed: _toggleMapPerspective,
+                              icon: Icon(
+                                _isMap3dView
+                                    ? Icons.view_in_ar_rounded
+                                    : Icons.map_outlined,
+                                size: 18,
+                              ),
+                              label: Text(_isMap3dView ? '3D' : '2D'),
+                              style: FilledButton.styleFrom(
+                                elevation: 5,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                backgroundColor: colors.surface.withValues(
+                                  alpha: 0.96,
+                                ),
+                                foregroundColor: colors.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        _themeToggleButton(),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+            return IndexedStack(
+              index: _selectedTab,
+              children: [
+                mapPage,
+                _buildDirectory(data, 'animal'),
+                _buildDirectory(data, 'facility'),
+              ],
+            );
+          },
+        ),
       ),
 
       bottomNavigationBar: NavigationBar(
@@ -1422,22 +2071,22 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
       // Button to retrieve and display the visitor's location.
       floatingActionButton: _selectedTab == 0
           ? FloatingActionButton.extended(
-        onPressed: _isLocating ? null : _locateMe,
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
-        elevation: 5,
-        shape: const StadiumBorder(),
-        icon: _isLocating
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : const Icon(Icons.my_location),
-        label: Text(_isLocating ? 'Locating...' : 'Locate Me'),
+              onPressed: _isLocating ? null : _locateMe,
+              backgroundColor: colors.primary,
+              foregroundColor: colors.onPrimary,
+              elevation: 5,
+              shape: const StadiumBorder(),
+              icon: _isLocating
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.my_location),
+              label: Text(_isLocating ? 'Locating...' : 'Locate Me'),
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
@@ -1447,34 +2096,665 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
 
 typedef ZooMapExtent = ({double south, double west, double north, double east});
 
-class AnimalPhoto {
-  final String url;
-  final String? assetPath;
-  final String title;
-  final String author;
-  final String sourceUrl;
-  final String license;
-  final String licenseUrl;
+class AnimalHabitatBackdropPainter extends CustomPainter {
+  final String animalName;
 
-  const AnimalPhoto({
-    required this.url,
-    this.assetPath,
-    required this.title,
-    required this.author,
-    required this.sourceUrl,
-    required this.license,
-    required this.licenseUrl,
-  });
+  const AnimalHabitatBackdropPainter(this.animalName);
 
-  factory AnimalPhoto.fromJson(Map<String, dynamic> json) => AnimalPhoto(
-    url: json['url'] as String,
-    assetPath: json['assetPath'] as String?,
-    title: json['title'] as String,
-    author: json['author'] as String,
-    sourceUrl: json['sourceUrl'] as String,
-    license: json['license'] as String,
-    licenseUrl: json['licenseUrl'] as String,
-  );
+  @override
+  void paint(Canvas canvas, Size size) {
+    final name = animalName.toLowerCase();
+    final water = const [
+      'swan',
+      'hippopotamus',
+      'otter',
+      'capybara',
+    ].any(name.contains);
+    final forest = const [
+      'monkey',
+      'langur',
+      'lemur',
+      'tiger',
+      'jaguar',
+      'bear',
+      'fox',
+      'cat',
+      'boar',
+      'chimpanzee',
+      'baboon',
+      'macaw',
+    ].any(name.contains);
+    final farm = const [
+      'sheep',
+      'horse',
+      'donkey',
+      'mule',
+      'llama',
+    ].any(name.contains);
+
+    final sky = water
+        ? const Color(0xFFBDE9E8)
+        : forest
+        ? const Color(0xFFB5DDBA)
+        : const Color(0xFFB9E3F2);
+    final horizon = water
+        ? const Color(0xFF82C5B7)
+        : forest
+        ? const Color(0xFF82B779)
+        : farm
+        ? const Color(0xFFB8D987)
+        : const Color(0xFFE6C979);
+    final foreground = water
+        ? const Color(0xFF4FA6A6)
+        : forest
+        ? const Color(0xFF4F955D)
+        : farm
+        ? const Color(0xFF84B96B)
+        : const Color(0xFFC4A951);
+
+    final bounds = Offset.zero & size;
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..shader = ui.Gradient.linear(
+          Offset(0, 0),
+          Offset(size.width, size.height),
+          [sky, horizon],
+        ),
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.82, size.height * 0.2),
+      size.shortestSide * 0.09,
+      Paint()..color = const Color(0xFFFFF3C7).withValues(alpha: 0.8),
+    );
+    final cloud = Paint()..color = Colors.white.withValues(alpha: 0.52);
+    canvas.drawCircle(
+      Offset(size.width * 0.2, size.height * 0.18),
+      size.shortestSide * 0.055,
+      cloud,
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.25, size.height * 0.17),
+      size.shortestSide * 0.075,
+      cloud,
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.3, size.height * 0.19),
+      size.shortestSide * 0.05,
+      cloud,
+    );
+
+    final distantHill = ui.Path()
+      ..moveTo(0, size.height * 0.62)
+      ..quadraticBezierTo(
+        size.width * 0.3,
+        size.height * 0.42,
+        size.width * 0.56,
+        size.height * 0.61,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.78,
+        size.height * 0.47,
+        size.width,
+        size.height * 0.59,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(distantHill, Paint()..color = horizon);
+
+    if (water) {
+      final lake = Paint()
+        ..shader = ui.Gradient.linear(
+          Offset(0, size.height * 0.63),
+          Offset(0, size.height),
+          const [Color(0xFF6FBAB5), Color(0xFF4F9E9D)],
+        );
+      canvas.drawRect(
+        Rect.fromLTWH(0, size.height * 0.63, size.width, size.height * 0.37),
+        lake,
+      );
+      final ripple = Paint()
+        ..color = const Color(0x99D9F1D9)
+        ..strokeWidth = math.max(1, size.shortestSide * 0.009)
+        ..strokeCap = StrokeCap.round;
+      for (var row = 0; row < 4; row++) {
+        final y = size.height * (0.71 + row * 0.065);
+        canvas.drawLine(
+          Offset(size.width * (0.12 + row * 0.06), y),
+          Offset(size.width * (0.34 + row * 0.05), y),
+          ripple,
+        );
+      }
+      for (final lily in [
+        Offset(size.width * 0.16, size.height * 0.7),
+        Offset(size.width * 0.81, size.height * 0.83),
+      ]) {
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: lily,
+            width: size.shortestSide * 0.2,
+            height: size.shortestSide * 0.065,
+          ),
+          Paint()..color = const Color(0xFF73B96F),
+        );
+        canvas.drawCircle(
+          Offset(lily.dx + size.shortestSide * 0.035, lily.dy - 2),
+          size.shortestSide * 0.022,
+          Paint()..color = const Color(0xFFFFD5E5),
+        );
+      }
+    } else if (forest) {
+      final trunk = Paint()
+        ..color = const Color(0xFF755D45)
+        ..strokeWidth = math.max(3, size.width * 0.035)
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        Offset(size.width * 0.07, size.height * 0.25),
+        Offset(size.width * 0.07, size.height),
+        trunk,
+      );
+      canvas.drawLine(
+        Offset(size.width * 0.94, size.height * 0.3),
+        Offset(size.width * 0.94, size.height),
+        trunk,
+      );
+      for (final leaf in [
+        Offset(size.width * 0.03, size.height * 0.23),
+        Offset(size.width * 0.11, size.height * 0.18),
+        Offset(size.width * 0.9, size.height * 0.22),
+        Offset(size.width * 0.97, size.height * 0.16),
+      ]) {
+        canvas.drawCircle(
+          leaf,
+          size.shortestSide * 0.15,
+          Paint()..color = const Color(0xFF6CA66B).withValues(alpha: 0.8),
+        );
+      }
+      final blossomColors = [
+        const Color(0xFFFFD166),
+        const Color(0xFFFF8E9E),
+        const Color(0xFFF4F0A3),
+      ];
+      for (var flower = 0; flower < 3; flower++) {
+        final center = Offset(
+          size.width * (0.16 + flower * 0.34),
+          size.height * (0.83 + (flower.isEven ? 0.05 : 0)),
+        );
+        final stem = Paint()
+          ..color = const Color(0xFF387D52)
+          ..strokeWidth = math.max(1.0, size.shortestSide * 0.012)
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+          center,
+          Offset(center.dx, center.dy + size.height * 0.09),
+          stem,
+        );
+        canvas.drawCircle(
+          center,
+          size.shortestSide * 0.035,
+          Paint()..color = blossomColors[flower],
+        );
+      }
+    } else {
+      final foregroundHill = ui.Path()
+        ..moveTo(0, size.height * 0.78)
+        ..quadraticBezierTo(
+          size.width * 0.47,
+          size.height * 0.6,
+          size.width,
+          size.height * 0.76,
+        )
+        ..lineTo(size.width, size.height)
+        ..lineTo(0, size.height)
+        ..close();
+      canvas.drawPath(foregroundHill, Paint()..color = foreground);
+      final grass = Paint()
+        ..color = Color.lerp(foreground, Colors.white, 0.28)!
+        ..strokeWidth = math.max(1, size.shortestSide * 0.008)
+        ..strokeCap = StrokeCap.round;
+      for (var blade = 0; blade < 10; blade++) {
+        final x = size.width * (0.04 + blade * 0.102);
+        final y = size.height * (0.87 + (blade.isEven ? 0.08 : 0));
+        canvas.drawLine(
+          Offset(x, y),
+          Offset(x - size.width * 0.018, y - size.height * 0.09),
+          grass,
+        );
+      }
+      const flowerColors = [
+        Color(0xFFFF8EA1),
+        Color(0xFFFFD166),
+        Color(0xFFF4F5E8),
+        Color(0xFFB9A3F4),
+      ];
+      for (var flower = 0; flower < flowerColors.length; flower++) {
+        final center = Offset(
+          size.width * (0.14 + flower * 0.23),
+          size.height * (0.82 + (flower.isEven ? 0.06 : 0)),
+        );
+        canvas.drawLine(
+          center,
+          Offset(center.dx, center.dy + size.height * 0.08),
+          grass,
+        );
+        canvas.drawCircle(
+          center,
+          size.shortestSide * 0.032,
+          Paint()..color = flowerColors[flower],
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant AnimalHabitatBackdropPainter oldDelegate) =>
+      oldDelegate.animalName != animalName;
+}
+
+class ZooEnclosurePainter extends CustomPainter {
+  final String animalName;
+  final bool includeAnimal;
+
+  const ZooEnclosurePainter(this.animalName, {this.includeAnimal = true});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / 128, size.height / 104);
+    canvas.translate(0, 20);
+
+    final name = animalName.toLowerCase();
+    final isBird = const [
+      'ostrich',
+      'crane',
+      'cassowary',
+      'swan',
+      'macaw',
+      'kite',
+      'eagle',
+      'emu',
+      'parrot',
+      'peacock',
+    ].any(name.contains);
+    final animalColor = name.contains('tiger')
+        ? const Color(0xFFF28A37)
+        : name.contains('lion')
+        ? const Color(0xFFD49A50)
+        : name.contains('elephant')
+        ? const Color(0xFF8A9CA0)
+        : name.contains('giraffe')
+        ? const Color(0xFFE8B849)
+        : name.contains('zebra')
+        ? const Color(0xFFECE7D8)
+        : name.contains('monkey') || name.contains('ape')
+        ? const Color(0xFF9B6242)
+        : isBird
+        ? const Color(0xFF4796B1)
+        : const Color(0xFF8B7B58);
+
+    ui.Path polygon(List<Offset> points) => ui.Path()
+      ..moveTo(points.first.dx, points.first.dy)
+      ..addPolygon(points.skip(1).toList(), true);
+
+    final leftFace = polygon(const [
+      Offset(14, 47),
+      Offset(64, 72),
+      Offset(64, 84),
+      Offset(14, 59),
+    ]);
+    final rightFace = polygon(const [
+      Offset(64, 72),
+      Offset(114, 47),
+      Offset(114, 59),
+      Offset(64, 84),
+    ]);
+    final top = polygon(const [
+      Offset(64, 17),
+      Offset(114, 46),
+      Offset(64, 72),
+      Offset(14, 46),
+    ]);
+
+    canvas.drawShadow(top, const Color(0x55313F33), 5, true);
+    canvas.drawPath(leftFace, Paint()..color = const Color(0xFF37754E));
+    canvas.drawPath(rightFace, Paint()..color = const Color(0xFF28633F));
+    canvas.drawPath(
+      top,
+      Paint()
+        ..shader = ui.Gradient.linear(Offset(35, 24), Offset(90, 72), [
+          Color(0xFFA8D887),
+          Color(0xFF70B96B),
+        ]),
+    );
+    canvas.drawPath(
+      top,
+      Paint()
+        ..color = const Color(0xFF4E925B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+
+    // Back fence and posts make the grass tile read as a tiny enclosure.
+    final fencePaint = Paint()
+      ..color = const Color(0xFF865638)
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final rail = ui.Path()
+      ..moveTo(19, 46)
+      ..lineTo(64, 21)
+      ..lineTo(109, 46);
+    canvas.drawPath(rail, fencePaint);
+    final lowerRail = ui.Path()
+      ..moveTo(23, 52)
+      ..lineTo(64, 74)
+      ..lineTo(105, 52);
+    canvas.drawPath(lowerRail, fencePaint..strokeWidth = 2.5);
+    for (final post in const [
+      Offset(19, 46),
+      Offset(42, 33),
+      Offset(64, 21),
+      Offset(86, 33),
+      Offset(109, 46),
+      Offset(23, 52),
+      Offset(64, 74),
+      Offset(105, 52),
+    ]) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: post, width: 4.5, height: 7),
+          const Radius.circular(1.5),
+        ),
+        Paint()..color = const Color(0xFFA9784E),
+      );
+    }
+
+    // A small shaded animal silhouette sits in the middle of each habitat.
+    if (includeAnimal) {
+      canvas.drawOval(
+        Rect.fromCenter(center: const Offset(63, 55), width: 30, height: 7),
+        Paint()..color = const Color(0x33233928),
+      );
+      if (isBird) {
+        canvas.drawOval(
+          Rect.fromCenter(center: const Offset(62, 49), width: 24, height: 17),
+          Paint()
+            ..shader = ui.Gradient.linear(
+              const Offset(52, 42),
+              const Offset(70, 58),
+              [Color.lerp(animalColor, Colors.white, 0.32)!, animalColor],
+            ),
+        );
+        canvas.drawOval(
+          Rect.fromCenter(center: const Offset(61, 49), width: 12, height: 10),
+          Paint()..color = Color.lerp(animalColor, Colors.black, 0.16)!,
+        );
+        canvas.drawCircle(
+          const Offset(74, 43),
+          7,
+          Paint()..color = animalColor,
+        );
+        canvas.drawCircle(
+          const Offset(76, 41),
+          1.45,
+          Paint()..color = const Color(0xFF25322C),
+        );
+        canvas.drawPath(
+          ui.Path()
+            ..moveTo(80, 43)
+            ..lineTo(88, 46)
+            ..lineTo(80, 48)
+            ..close(),
+          Paint()..color = const Color(0xFFE5A843),
+        );
+        final legs = Paint()
+          ..color = const Color(0xFF765335)
+          ..strokeWidth = 1.8
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(const Offset(58, 56), const Offset(57, 63), legs);
+        canvas.drawLine(const Offset(68, 56), const Offset(69, 63), legs);
+      } else {
+        final bodyRect = name.contains('giraffe')
+            ? const Rect.fromLTRB(52, 43, 77, 57)
+            : const Rect.fromLTRB(49, 43, 76, 59);
+        canvas.drawOval(
+          bodyRect,
+          Paint()
+            ..shader = ui.Gradient.linear(
+              const Offset(51, 43),
+              const Offset(75, 60),
+              [Color.lerp(animalColor, Colors.white, 0.3)!, animalColor],
+            ),
+        );
+        if (name.contains('giraffe')) {
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              const Rect.fromLTRB(68, 31, 75, 48),
+              const Radius.circular(3),
+            ),
+            Paint()..color = animalColor,
+          );
+          canvas.drawCircle(
+            const Offset(74, 31),
+            5.5,
+            Paint()..color = animalColor,
+          );
+          for (final spot in const [
+            Offset(57, 47),
+            Offset(66, 53),
+            Offset(72, 39),
+          ]) {
+            canvas.drawCircle(
+              spot,
+              2,
+              Paint()..color = const Color(0xFFAA7134),
+            );
+          }
+        } else if (name.contains('elephant')) {
+          canvas.drawCircle(
+            const Offset(75, 46),
+            8,
+            Paint()..color = animalColor,
+          );
+          canvas.drawOval(
+            Rect.fromCenter(center: const Offset(82, 50), width: 6, height: 12),
+            Paint()..color = const Color(0xFF71858A),
+          );
+          canvas.drawLine(
+            const Offset(80, 49),
+            const Offset(83, 58),
+            Paint()
+              ..color = animalColor
+              ..strokeWidth = 4
+              ..strokeCap = StrokeCap.round,
+          );
+        } else {
+          canvas.drawCircle(
+            const Offset(75, 45),
+            7,
+            Paint()..color = animalColor,
+          );
+          canvas.drawCircle(
+            const Offset(71, 39),
+            3.5,
+            Paint()..color = Color.lerp(animalColor, Colors.white, 0.15)!,
+          );
+          canvas.drawCircle(
+            const Offset(80, 39),
+            3.5,
+            Paint()..color = Color.lerp(animalColor, Colors.white, 0.15)!,
+          );
+        }
+        canvas.drawCircle(
+          const Offset(77, 44),
+          1.5,
+          Paint()..color = const Color(0xFF26332B),
+        );
+        if (name.contains('tiger')) {
+          final stripePaint = Paint()
+            ..color = const Color(0xFF49352A)
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.round;
+          canvas.drawLine(
+            const Offset(55, 45),
+            const Offset(58, 51),
+            stripePaint,
+          );
+          canvas.drawLine(
+            const Offset(63, 44),
+            const Offset(66, 50),
+            stripePaint,
+          );
+          canvas.drawLine(
+            const Offset(69, 48),
+            const Offset(71, 54),
+            stripePaint,
+          );
+        }
+        final legs = Paint()
+          ..color = Color.lerp(animalColor, Colors.black, 0.18)!
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round;
+        for (final x in const [55.0, 70.0]) {
+          canvas.drawLine(Offset(x, 55), Offset(x - 1, 62), legs);
+        }
+        canvas.drawLine(
+          const Offset(50, 47),
+          const Offset(45, 43),
+          Paint()
+            ..color = animalColor
+            ..strokeWidth = 2.5
+            ..strokeCap = StrokeCap.round,
+        );
+      }
+    }
+
+    // The low front rail keeps the animal visible while making the habitat feel enclosed.
+    final frontFence = Paint()
+      ..color = const Color(0xFF9B6C43)
+      ..strokeWidth = 2.6
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(
+      ui.Path()
+        ..moveTo(23, 54)
+        ..lineTo(64, 76)
+        ..lineTo(105, 54),
+      frontFence,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant ZooEnclosurePainter oldDelegate) =>
+      oldDelegate.animalName != animalName ||
+      oldDelegate.includeAnimal != includeAnimal;
+}
+
+class ZooMapPinPainter extends CustomPainter {
+  final String category;
+
+  const ZooMapPinPainter(this.category);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / 64, size.height / 76);
+
+    final color = switch (category.toLowerCase()) {
+      'animal' => const Color(0xFF398764),
+      'facility' => const Color(0xFFE58A3A),
+      _ => const Color(0xFF4B87A0),
+    };
+    final pin = ui.Path()
+      ..moveTo(32, 72)
+      ..cubicTo(25, 60, 9, 44, 9, 27)
+      ..cubicTo(9, 14, 19, 5, 32, 5)
+      ..cubicTo(45, 5, 55, 14, 55, 27)
+      ..cubicTo(55, 44, 39, 60, 32, 72)
+      ..close();
+
+    canvas.drawShadow(pin, const Color(0x6623332B), 4, true);
+    canvas.drawPath(
+      pin,
+      Paint()
+        ..shader = ui.Gradient.linear(
+          const Offset(14, 8),
+          const Offset(48, 66),
+          [Color.lerp(color, Colors.white, 0.18)!, color],
+        ),
+    );
+    canvas.drawPath(
+      pin,
+      Paint()
+        ..color = const Color(0xFFFFFEF8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+    canvas.drawCircle(const Offset(32, 27), 16, Paint()..color = Colors.white);
+
+    final detailPaint = Paint()
+      ..color = Color.lerp(color, const Color(0xFF243C2D), 0.26)!
+      ..style = PaintingStyle.fill;
+    if (category.toLowerCase() == 'animal') {
+      canvas.drawOval(
+        Rect.fromCenter(center: const Offset(32, 31), width: 15, height: 11),
+        detailPaint,
+      );
+      for (final point in const [
+        Offset(22.5, 23),
+        Offset(28.5, 19),
+        Offset(35.5, 19),
+        Offset(41.5, 23),
+      ]) {
+        canvas.drawCircle(point, 3.2, detailPaint);
+      }
+    } else if (category.toLowerCase() == 'facility') {
+      final roof = ui.Path()
+        ..moveTo(20, 26)
+        ..lineTo(32, 18)
+        ..lineTo(44, 26)
+        ..close();
+      canvas.drawPath(roof, detailPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTRB(22, 25, 42, 37),
+          const Radius.circular(2),
+        ),
+        detailPaint,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTRB(29, 29, 35, 37),
+          const Radius.circular(1.5),
+        ),
+        Paint()..color = Colors.white,
+      );
+    } else {
+      final star = ui.Path();
+      for (var point = 0; point < 10; point++) {
+        final angle = -math.pi / 2 + point * math.pi / 5;
+        final radius = point.isEven ? 11.0 : 5.2;
+        final position = Offset(
+          32 + radius * math.cos(angle),
+          27 + radius * math.sin(angle),
+        );
+        if (point == 0) {
+          star.moveTo(position.dx, position.dy);
+        } else {
+          star.lineTo(position.dx, position.dy);
+        }
+      }
+      star.close();
+      canvas.drawPath(star, detailPaint);
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant ZooMapPinPainter oldDelegate) =>
+      oldDelegate.category != category;
 }
 
 class ZooMapData {

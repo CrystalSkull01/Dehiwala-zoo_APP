@@ -64,7 +64,6 @@ flutter:
   assets:
     -  assets/data/waypoints_flutter.json
     - assets/data/recorded_route.geojson
-    - assets/data/animal_photo_credits.json
     - assets/images/animals/
 
   # To add assets to your application, add an assets section, like this:
