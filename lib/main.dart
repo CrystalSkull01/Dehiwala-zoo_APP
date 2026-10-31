@@ -140,7 +140,7 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
   late final GamificationService _gamificationService;
   StreamSubscription<Position>? _positionSubscription;
   ExplorationSession? _explorationSession;
-  bool _isExplorationPanelMinimized = false;
+  bool _isExplorationPanelMinimized = true;
   bool _isLiveLocationTracking = false;
   final AnimalInformationService _animalInformationService =
       AnimalInformationService();
@@ -331,7 +331,7 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     _searchController.clear();
     setState(() {
       _explorationSession = ExplorationSession.start(DateTime.now());
-      _isExplorationPanelMinimized = false;
+      _isExplorationPanelMinimized = true;
       _currentPosition = null;
       _selectedTab = 1;
       _selectedCategory = 'Animals';
@@ -433,7 +433,10 @@ class _ZooMapScreenState extends State<ZooMapScreen> {
     final session = _explorationSession;
     if (session == null) return;
     if (!mounted) return;
-    setState(() => _explorationSession = null);
+    setState(() {
+      _explorationSession = null;
+      _isExplorationPanelMinimized = true;
+    });
     if (!_isLiveLocationTracking) {
       await _positionSubscription?.cancel();
       _positionSubscription = null;

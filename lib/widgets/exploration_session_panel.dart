@@ -55,7 +55,7 @@ class ExplorationSessionPanel extends StatelessWidget {
       shadowColor: Colors.black.withValues(alpha: 0.16),
       borderRadius: BorderRadius.circular(22),
       clipBehavior: Clip.antiAlias,
-      child: isActive && isMinimized
+      child: isMinimized
           ? _buildMinimized(context, colors, progress)
           : SizedBox(
               width: 252,
@@ -103,17 +103,16 @@ class ExplorationSessionPanel extends StatelessWidget {
                                     ?.copyWith(fontWeight: FontWeight.w900),
                               ),
                             ),
-                            if (isActive)
-                              IconButton(
-                                tooltip: 'Minimize exploration panel',
-                                onPressed: onToggleMinimized,
-                                visualDensity: VisualDensity.compact,
-                                icon: Icon(
-                                  Icons.keyboard_arrow_up_rounded,
-                                  size: 21,
-                                  color: colors.primary,
-                                ),
+                            IconButton(
+                              tooltip: 'Minimize exploration panel',
+                              onPressed: onToggleMinimized,
+                              visualDensity: VisualDensity.compact,
+                              icon: Icon(
+                                Icons.keyboard_arrow_up_rounded,
+                                size: 21,
+                                color: colors.primary,
                               ),
+                            ),
                             IconButton(
                               tooltip: 'Open wildlife collection',
                               onPressed: onOpenCollection,
@@ -296,74 +295,100 @@ class ExplorationSessionPanel extends StatelessWidget {
     ColorScheme colors,
     double progress,
   ) {
-    final destination = destinationName ?? 'All locations found';
-    final distance = isFindingLocation
-        ? ' · Finding location…'
-        : distanceMeters == null
-        ? ''
-        : ' · ${_formatDistance(distanceMeters!)}';
+    final title = isActive
+        ? destinationName ?? 'Adventure in progress'
+        : 'Zoo adventure';
+    final subtitle = isActive
+        ? isFindingLocation
+              ? 'Finding your location'
+              : distanceMeters == null
+              ? '$sessionDiscoveryCount found · +$sessionXp XP'
+              : '${_formatDistance(distanceMeters!)} away · '
+                    '$sessionDiscoveryCount found · +$sessionXp XP'
+        : '$discoveredCount/$eligibleAnimalCount discovered · $totalXp XP';
 
     return SizedBox(
-      width: 252,
+      width: 240,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Row(
+        padding: const EdgeInsets.fromLTRB(9, 7, 7, 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: colors.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.explore_rounded,
-                color: colors.primary,
-                size: 20,
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(
+                    isActive ? Icons.explore_rounded : Icons.hiking_rounded,
+                    color: colors.primary,
+                    size: 19,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelLarge
+                            ?.copyWith(fontWeight: FontWeight.w900),
+                      ),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall
+                            ?.copyWith(color: colors.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Expand exploration panel',
+                  onPressed: onToggleMinimized,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: colors.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 4,
+                backgroundColor: colors.surfaceContainerHighest,
+                color: const Color(0xFFE5AD3A),
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    destination,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelLarge
-                        ?.copyWith(fontWeight: FontWeight.w900),
+            if (!isActive) ...[
+              const SizedBox(height: 7),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onStart,
+                  icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                  label: const Text('Start Exploring'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF2F8055),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(36),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                   ),
-                  Text(
-                    '$sessionDiscoveryCount found · +$sessionXp XP$distance',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall
-                        ?.copyWith(color: colors.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 4),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 5,
-                      backgroundColor: colors.surfaceContainerHighest,
-                      color: const Color(0xFFE5AD3A),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            IconButton(
-              tooltip: 'Expand exploration panel',
-              onPressed: onToggleMinimized,
-              visualDensity: VisualDensity.compact,
-              icon: Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: colors.primary,
-              ),
-            ),
+            ],
           ],
         ),
       ),
